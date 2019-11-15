@@ -24,11 +24,19 @@ def sign(x1,x2,m,b):
     # If the x1 and x2 position lies above the line corresponding to m and b, then it is positive, otherwise negative
     liney = m*x1 + b
     
+    percentWrong = 0.9
+
 
     if x2 > liney:
-        return 1
+        if numpy.random.uniform(0,1) > percentWrong:
+            return -1
+        else:
+            return 1
     else:
-        return -1
+        if numpy.random.uniform(0,1) > percentWrong:
+            return 1
+        else:
+            return -1
 
 
 def createData(m, b):
@@ -75,7 +83,7 @@ def plotCurrentW(ww, currentData, flush = True):
 
     if flush:
         plt.draw()
-        plt.pause(0.001)
+        plt.pause(1)
         plt.clf()
     else:
         plt.show()
