@@ -10,9 +10,10 @@ import numpy
 import matplotlib.pylab as plt
 import pandas as pd
 import sys
+import copy
 
 # Number of data points
-N = 20
+N = 200
 
 #    w0    w1  w2
 initial_w = [0.1, 0.1, 0.1]
@@ -24,7 +25,7 @@ def sign(x1,x2,m,b):
     # If the x1 and x2 position lies above the line corresponding to m and b, then it is positive, otherwise negative
     liney = m*x1 + b
     
-    percentWrong = 0.9
+    percentWrong = 0.95
 
 
     if x2 > liney:
@@ -83,7 +84,7 @@ def plotCurrentW(ww, currentData, flush = True):
 
     if flush:
         plt.draw()
-        plt.pause(1)
+        plt.pause(0.1)
         plt.clf()
     else:
         plt.show()
@@ -94,41 +95,79 @@ def perceptron(data):
     # Implement the perceptron learning algorithm to determine the weights w that will fit the data
     w = initial_w
     
+    max_iterations = 100
     
-    
-    #print(data)
-    
-    #for row in data.iterrows():
-    index = 0
-    while index < len(data):
-        print("Index {0} of {1}".format(index, len(data)))
-        plotCurrentW(w, data)
-        row = data.iloc[index]
+    numMismatch = len(data) 
+    bestW = w
+   
+    for iteration in range(0, max_iterations):
+        print("Iteration {0} of {1} with w: {2}".format(iteration, max_iterations, w))
         
-        #print(row)
-        #sys.exit()
-        #print(row[1]["x1"])
-        h = w[0]*1 + w[1]*row["x1"] + w[2]*row["x2"]
+        miscategorized = []
+        categorized = []
+    
+        for index in range(0, len(data)):
+            row = data.iloc[index]
         
-        if numpy.sign(h) != numpy.sign(row["yp"]):
-            # Mismatch
-            # Update w values
+            h = w[0]*1 + w[1]*row["x1"] + w[2]*row["x2"]
+    
+            if numpy.sign(h) != numpy.sign(row["yp"]):
+                # Mismatch
+                miscategorized.append(index)
+            else:
+                categorized.append(index)
+        
+        print("Good: {0} and Bad: {1}".format(len(categorized),len(miscategorized)))
+        
+        
+        if len(miscategorized) < numMismatch:
+            # Better fit
+            plotCurrentW(w, data)
+            bestW = copy.deepcopy(w)
+            numMismatch = len(miscategorized)
             
-            #w[w0 w1 w2] = w + yp * data
-            w[0] = w[0] + row["yp"]*1
-            w[1] = w[1] + row["yp"]*row["x1"]
-            w[2] = w[2] + row["yp"]*row["x2"]
-            index = 0
+        if len(miscategorized) > 0:
+            choice = miscategorized[numpy.random.randint(0, len(miscategorized))]
+            w[0] = w[0] + data.iloc[choice]["yp"]*1
+            w[1] = w[1] + data.iloc[choice]["yp"]*data.iloc[choice]["x1"]
+            w[2] = w[2] + data.iloc[choice]["yp"]*data.iloc[choice]["x2"]
         else:
-            index += 1
-    # Steps:
-    # - See if the current weights will correctly predict the yp values in the DataFrame for all rows
-    # - If so, done.
-    # - If not, choose a row that isnt predicted correctly, and update the weights by the scalar product of yp with [1, x1, x2]
-    # - Repeat until all rows are correctly predicted
+            print("Best w: {0} and with {1} mismatches".format(w,numMismatch)) 
+            return w    
+                
+    # #print(data)
+    
+    # #for row in data.iterrows():
+    # index = 0
+    # while index < len(data):
+        # print("Index {0} of {1}".format(index, len(data)))
+        # plotCurrentW(w, data)
+        # row = data.iloc[index]
+        
+        # #print(row)
+        # #sys.exit()
+        # #print(row[1]["x1"])
+        # h = w[0]*1 + w[1]*row["x1"] + w[2]*row["x2"]
+        
+        # if numpy.sign(h) != numpy.sign(row["yp"]):
+            # # Mismatch
+            # # Update w values
+            
+            # #w[w0 w1 w2] = w + yp * data
+            # w[0] = w[0] + row["yp"]*1
+            # w[1] = w[1] + row["yp"]*row["x1"]
+            # w[2] = w[2] + row["yp"]*row["x2"]
+            # index = 0
+        # else:
+            # index += 1
+    # # Steps:
+    # # - See if the current weights will correctly predict the yp values in the DataFrame for all rows
+    # # - If so, done.
+    # # - If not, choose a row that isnt predicted correctly, and update the weights by the scalar product of yp with [1, x1, x2]
+    # # - Repeat until all rows are correctly predicted
 
-
-    return w # Return the predicting weights
+    print("Best w: {0} and with {1} mismatches".format(bestW,numMismatch)) 
+    return bestW # Return the predicting weights
 
 line_gradient = 1 # 45 degree line
 intercept = 0 # passing through the origin
