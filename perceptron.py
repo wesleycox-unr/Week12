@@ -74,8 +74,9 @@ def perceptron(data):
             w[0] = w[0] + row["yp"]*1
             w[1] = w[1] + row["yp"]*row["x1"]
             w[2] = w[2] + row["yp"]*row["x2"]
-   
-        index += 1
+            index = 0
+        else:
+            index += 1
     # Steps:
     # - See if the current weights will correctly predict the yp values in the DataFrame for all rows
     # - If so, done.
@@ -119,4 +120,4 @@ plt.plot(resultW.x1, resultW.x2)
 
 
 
-#plt.show()
+plt.show()
